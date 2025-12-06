@@ -24,4 +24,5 @@ public class Lead : BaseEntity
     public LeadSource Source { get; set; } = LeadSource.Unknown;
     public LeadPriority Priority { get; set; } = LeadPriority.Medium;
     public QualificationLevel QualificationLevel { get; set; } = QualificationLevel.Unqualified;
+    
 }

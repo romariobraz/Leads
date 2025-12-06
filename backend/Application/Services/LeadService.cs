@@ -1,4 +1,5 @@
-﻿using LeadQualifier.Api.DTOs;
+﻿using ApiDto = LeadQualifier.Api.DTOs; // for LeadAiExtractedDto
+using LeadQualifier.Application.DTOs.Leads;
 using LeadQualifier.Application.Interfaces;
 using LeadQualifier.Domain.Entities;
 using LeadQualifier.Domain.Enums;
@@ -33,13 +34,13 @@ public class LeadService : ILeadService
         return lead == null ? null : MapToResponse(lead);
     }
 
-    public async Task<LeadResponseDto> CreateLeadAsync(LeadRequestDto dto)
+    public async Task<LeadResponseDto> CreateLeadAsync(CreateLeadDto dto)
     {
         var lead = new Lead
         {
             Name = dto.Name,
             Email = string.IsNullOrWhiteSpace(dto.Email) ? null : new Email(dto.Email),
-            Phone = string.IsNullOrWhiteSpace(dto.Phone) ? null : new PhoneNumber(dto.Phone),
+            Phone = null,
             Company = string.IsNullOrWhiteSpace(dto.Company) ? null : new CompanyName(dto.Company),
             Budget = dto.Budget,
             Need = dto.Need,
@@ -57,17 +58,17 @@ public class LeadService : ILeadService
         return MapToResponse(lead);
     }
 
-    public async Task<LeadResponseDto> CreateLeadFromAiAsync(LeadAiExtractedDto dto)
+    public async Task<LeadResponseDto> CreateLeadFromAiAsync(ApiDto.LeadAiExtractedDto dto)
     {
         var lead = new Lead
         {
-            Name = dto.Name,
+            Name = dto.FullName,
             Email = string.IsNullOrWhiteSpace(dto.Email) ? null : new Email(dto.Email),
-            Phone = string.IsNullOrWhiteSpace(dto.Phone) ? null : new PhoneNumber(dto.Phone),
+            Phone = null,
             Company = string.IsNullOrWhiteSpace(dto.Company) ? null : new CompanyName(dto.Company),
-            Budget = dto.Budget,
-            Need = dto.Need,
-            Authority = dto.Authority,
+            Budget = dto.Budget ?? 0m,
+            Need = dto.ProblemDescription,
+            Authority = null,
             Source = LeadSource.Chatbot,
             Priority = LeadPriority.High,
             Status = LeadStatus.InConversation
@@ -82,25 +83,24 @@ public class LeadService : ILeadService
     }
 
     public async Task<(bool Success, string Message, LeadResponseDto Lead)>
-        UpdateLeadAsync(Guid id, LeadRequestDto dto)
+        UpdateLeadAsync(Guid id, LeadQualifier.Application.DTOs.Leads.UpdateLeadDto dto)
     {
         var lead = await _leadRepository.GetByIdAsync(id);
 
         if (lead == null)
             return (false, "Lead not found", null!);
 
-        lead.Name = dto.Name;
-        lead.Email = string.IsNullOrWhiteSpace(dto.Email) ? null : new Email(dto.Email);
-        lead.Phone = string.IsNullOrWhiteSpace(dto.Phone) ? null : new PhoneNumber(dto.Phone);
-        lead.Company = string.IsNullOrWhiteSpace(dto.Company) ? null : new CompanyName(dto.Company);
-
-        lead.Budget = dto.Budget;
-        lead.Need = dto.Need;
-        lead.Authority = dto.Authority;
-
-        lead.Source = dto.Source;
-        lead.Priority = dto.Priority;
-        lead.Status = dto.Status;
+        // Apply partial updates from UpdateLeadDto
+        if (dto.Name != null) lead.Name = dto.Name;
+        if (dto.Email != null) lead.Email = new Email(dto.Email);
+        if (dto.Phone != null) lead.Phone = new PhoneNumber(dto.Phone);
+        if (dto.Company != null) lead.Company = new CompanyName(dto.Company);
+        if (dto.Budget.HasValue) lead.Budget = dto.Budget.Value;
+        if (dto.Need != null) lead.Need = dto.Need;
+        if (dto.Authority != null) lead.Authority = dto.Authority;
+        if (dto.Source.HasValue) lead.Source = dto.Source.Value;
+        if (dto.Priority.HasValue) lead.Priority = dto.Priority.Value;
+        if (dto.Status.HasValue) lead.Status = dto.Status.Value;
 
         lead.Scoring = _scoringService.ScoreLead(lead);
 
@@ -123,23 +123,23 @@ public class LeadService : ILeadService
 
     private LeadResponseDto MapToResponse(Lead lead)
     {
-        return new LeadResponseDto
-        {
-            Id = lead.Id,
-            Name = lead.Name,
-            Email = lead.Email?.Address,
-            Phone = lead.Phone?.Number,
-            Company = lead.Company?.Name,
-            Budget = lead.Budget,
-            Need = lead.Need,
-            Authority = lead.Authority,
-            FitScore = lead.Scoring.Fit,
-            IntentScore = lead.Scoring.Intent,
-            Source = lead.Source,
-            Status = lead.Status,
-            Priority = lead.Priority,
-            QualificationLevel = lead.QualificationLevel,
-            CreatedAt = lead.CreatedAt
-        };
+        return new LeadResponseDto(
+            Id: lead.Id,
+            Name: lead.Name ?? string.Empty,
+            Email: lead.Email?.Address ?? string.Empty,
+            Phone: lead.Phone?.Number ?? string.Empty,
+            Company: lead.Company?.Name ?? string.Empty,
+            Budget: lead.Budget,
+            Need: lead.Need ?? string.Empty,
+            Authority: lead.Authority ?? string.Empty,
+            FitScore: lead.Scoring.Fit,
+            IntentScore: lead.Scoring.Intent,
+            Status: lead.Status,
+            Source: lead.Source,
+            Priority: lead.Priority,
+            QualificationLevel: lead.QualificationLevel,
+            CreatedAt: lead.CreatedAt,
+            UpdatedAt: lead.UpdatedAt
+        );
     }
 }

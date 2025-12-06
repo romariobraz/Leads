@@ -23,7 +23,7 @@ public class LeadsController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var leads = await _leadService.GetAllAsync();
-        return Ok(leads.Select(l => l.ToListItemDto()));
+        return Ok(leads);
     }
 
     // -------------------------------------------------------
@@ -36,7 +36,7 @@ public class LeadsController : ControllerBase
         if (lead is null)
             return NotFound();
 
-        return Ok(lead.ToResponseDto());
+        return Ok(lead);
     }
 
     // -------------------------------------------------------
@@ -45,8 +45,8 @@ public class LeadsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateLeadDto dto)
     {
-        var result = await _leadService.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result.ToResponseDto());
+        var result = await _leadService.CreateLeadAsync(dto);
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
     // -------------------------------------------------------
@@ -56,11 +56,11 @@ public class LeadsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateLeadDto dto)
     {
-        var updatedLead = await _leadService.UpdateAsync(id, dto);
-        if (updatedLead is null)
-            return NotFound();
+        var (success, message, lead) = await _leadService.UpdateLeadAsync(id, dto);
+        if (!success)
+            return NotFound(new { message });
 
-        return Ok(updatedLead.ToResponseDto());
+        return Ok(lead);
     }
 
     // -------------------------------------------------------
@@ -70,11 +70,11 @@ public class LeadsController : ControllerBase
     [HttpPatch("{id}")]
     public async Task<IActionResult> PartialUpdate(Guid id, [FromBody] UpdateLeadDto dto)
     {
-        var updatedLead = await _leadService.UpdateAsync(id, dto);
-        if (updatedLead is null)
-            return NotFound();
+        var (success, message, lead) = await _leadService.UpdateLeadAsync(id, dto);
+        if (!success)
+            return NotFound(new { message });
 
-        return Ok(updatedLead.ToResponseDto());
+        return Ok(lead);
     }
 
     // -------------------------------------------------------
@@ -83,7 +83,7 @@ public class LeadsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = await _leadService.DeleteAsync(id);
+        var deleted = await _leadService.DeleteLeadAsync(id);
         if (!deleted)
             return NotFound();
 

@@ -1,5 +1,6 @@
 ﻿using LeadQualifier.Application.Interfaces;
 using LeadQualifier.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
 namespace LeadQualifier.Infrastructure.Persistence.Repository;
 

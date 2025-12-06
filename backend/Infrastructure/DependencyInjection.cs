@@ -18,8 +18,8 @@ public static class DependencyInjection
 
         services.AddDbContext<AppDbContext>(options =>
         {
-            // Use SQL Server by default; switch to UseNpgsql for Postgres
-            options.UseSqlServer(conn, sql => sql.EnableRetryOnFailure());
+            // Use PostgreSQL via Npgsql
+            options.UseNpgsql(conn, npgsql => npgsql.EnableRetryOnFailure());
         });
 
 

@@ -22,6 +22,7 @@ public static class SwaggerConfig
                 }
             });
 
+            // Enable Swagger annotations (Swashbuckle.AspNetCore.Annotations)
             c.EnableAnnotations();
         });
 

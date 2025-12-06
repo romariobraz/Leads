@@ -1,8 +1,9 @@
 ﻿using LeadQualifier.Domain.Entities;
+using LeadQualifier.Domain.ValueObjects;
 
 namespace LeadQualifier.Application.Interfaces;
 
 public interface IScoringService
 {
-    (int fit, int intent) ScoreLead(Lead lead);
+    Scoring ScoreLead(Lead lead);
 }

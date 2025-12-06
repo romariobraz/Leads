@@ -4,10 +4,8 @@ using LeadQualifier.Api.Middlewares;
 using LeadQualifier.Application.Interfaces;
 using LeadQualifier.Application.Services;
 using LeadQualifier.Application.Validators;
-using LeadQualifier.Infrastructure.Data;
-using LeadQualifier.Infrastructure.Persistence.Repository;
-using LeadQualifier.Infrastructure.Repositories;
-using LeadQualifier.Infrastructure.Services;
+using LeadQualifier.Infrastructure;
+using LeadQualifier.Api.Config;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -16,13 +14,10 @@ using System;
 var builder = WebApplication.CreateBuilder(args);
 
 // ----------------------------------------------------------
-// DATABASE (EF CORE)
+// Infra + API services (DB, repositories, HttpClient for OpenAI, etc.)
 // ----------------------------------------------------------
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    )
-);
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApiServices(builder.Configuration);
 
 // ----------------------------------------------------------
 // CONTROLLERS
@@ -60,10 +55,7 @@ builder.Services.AddValidatorsFromAssembly(typeof(CreateLeadDtoValidator).Assemb
 // DEPENDENCY INJECTION (Application + Infra)
 // ----------------------------------------------------------
 
-// Domain/Infra
-builder.Services.AddScoped<ILeadRepository, LeadRepository>();
-builder.Services.AddScoped<ILeadService, LeadService>();
-builder.Services.AddScoped<ILeadAgentService, LeadAgentService>();
+// Domain/Infra registrations are handled by AddInfrastructure/AddApiServices
 
 // ----------------------------------------------------------
 // SWAGGER
