@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="backend\Api\Controllers\LeadsController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="backend\Infrastructure\Migrations\" />
+    <Folder Include="frontend\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="backend\Api\Controllers\LeadsController.cs" />
+  </ItemGroup>
+
+</Project>
